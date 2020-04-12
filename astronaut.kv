@@ -1,0 +1,349 @@
+#:kivy 1.11.1
+#:import Window kivy.core.window.Window
+
+<HomeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: 0.08
+            Label:
+                text: 'Welcome to Astunut!'
+                font_size: 100
+                font_name: './fonts/absolutepink.otf'
+        FloatLayout:
+            size_hint_y: 0.92
+            canvas.before:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: './images/galaxybackground.jpg'
+            Button:
+                background_color: 0,0,0,0
+                text: 'Start'
+                font_size: 150
+                font_name: './fonts/halfelvencond.ttf'
+                on_press: app.play_plop_sound('LEVELS')
+                pos_hint: {'center_x': .5, 'center_y': .6}
+                size: 350,180
+                size_hint: None, None
+            BoxLayout:
+                orientation: 'vertical'
+                pos_hint: {'x': .5, 'y': .2}
+                Image:
+                    source: './images/astro.png'
+                    pos_hint: {'center_x': 0, 'y': 0}
+                    size: 200,200
+                    size_hint: None, None
+                Button:
+                    background_color: 0.1,0.3,0.7,0.8
+                    text: 'Compass'
+                    font_size: 50
+                    font_name: './fonts/halfelvencond.ttf'
+                    on_press: app.play_plop_sound('INSTRUCTIONS')
+                    pos_hint: {'center_x': 0, 'y': 0}
+                    size: 250,100
+                    size_hint: None, None
+
+<LevelsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        FloatLayout:
+            size_hint_y: 0.9
+            canvas.before:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: './images/galaxybackground.jpg'
+            Button:
+                background_color: 0,0,0,0
+                on_press: app.play_star_sound('LEVEL1')
+                pos_hint: {'center_x': .5, 'center_y': .75}
+                size: 200, 200
+                size_hint: None, None
+                Image:
+                    source: './images/star.png'
+                    y: self.parent.y
+                    x: self.parent.x
+                    size: 200, 200
+                    allow_stretch: True
+            Label:
+                text: 'Level 1'
+                font_size: 50
+                font_name: './fonts/halfelvencond.ttf'
+                pos_hint: {'center_x': .5, 'center_y':.63}
+            Button:
+                background_color: 0,0,0,0
+                on_press: app.play_star_sound('LEVEL2')
+                pos_hint: {'center_x': .5, 'center_y': .5}
+                size: 200, 200
+                size_hint: None, None
+                Image:
+                    source: './images/star.png'
+                    y: self.parent.y
+                    x: self.parent.x
+                    size: 200, 200
+                    allow_stretch: True
+            Label:
+                text: 'Level 2'
+                font_size: 50
+                font_name: './fonts/halfelvencond.ttf'
+                pos_hint: {'center_x': .5, 'center_y':.38}
+            Button:
+                background_color: 0,0,0,0
+                on_press: app.play_star_sound('LEVEL3')
+                pos_hint: {'center_x': .5, 'center_y': .25}
+                size: 200, 200
+                size_hint: None, None
+                Image:
+                    source: './images/star.png'
+                    y: self.parent.y
+                    x: self.parent.x
+                    size: 200, 200
+                    allow_stretch: True
+            Label:
+                text: 'Level 3'
+                font_size: 50
+                font_name: './fonts/halfelvencond.ttf'
+                pos_hint: {'center_x': .5, 'center_y':.13}
+        BoxLayout:
+            size_hint_y: 0.1
+            Button:
+                background_color: 0,0,1,0.8
+                text: 'Back'
+                font_size: 100
+                font_name: './fonts/absolutepink.otf'
+                on_press: app.play_plop_sound('HOME')
+
+<InstructionsScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        BoxLayout:
+            size_hint_y: 0.9
+            orientation: 'vertical'
+            Label:
+                size_hint_y: 0.1
+                text: '--COMPASS--'
+                font_size: 100
+                font_name: './fonts/absolutepink.otf'
+            GridLayout:
+                size_hint_y: 0.9
+                cols: 2
+                spacing: (40,10)
+                Image:
+                    source: './images/astro.png'
+                    size_hint_x: 0.3
+                Label:
+                    text: 'Hello, I am lonely and love music.\nStars are musical notes of the galaxy.\nHelp me collect them all!'
+                    multiline: True
+                    valign: 'middle'
+                    text_size: self.size
+                    font_size: 70
+                    font_name: './fonts/absolutepink.otf'
+                    size_hint_x: 0.7
+                Image:
+                    source: './images/hook.png'
+                    size_hint_x: 0.3
+                Label:
+                    text: 'Time-based hook.\nPress SPACEBAR'
+                    multiline: True
+                    valign: 'middle'
+                    text_size: self.size
+                    font_size: 70
+                    font_name: './fonts/absolutepink.otf'
+                    size_hint_x: 0.7
+                Image:
+                    source: './images/star.png'
+                    size_hint_x: 0.3
+                Label:
+                    text: 'Collect ALL the Stars!'
+                    valign: 'middle'
+                    text_size: self.size
+                    font_size: 70
+                    font_name: './fonts/absolutepink.otf'
+                    size_hint_x: 0.7
+                Image:
+                    source: './images/blackhole.png'
+                    size_hint_x: 0.3
+                Label:
+                    text: 'Avoid the BLACKHOLE!'
+                    valign: 'middle'
+                    text_size: self.size
+                    font_size: 70
+                    font_name: './fonts/absolutepink.otf'
+                    size_hint_x: 0.7
+                Image:
+                    source: './images/porcupine.png'
+                    size_hint_x: 0.3
+                Label:
+                    text: 'ANNOYING ANIMALS are here to disturb you!'
+                    valign: 'middle'
+                    text_size: self.size
+                    font_size: 70
+                    font_name: './fonts/absolutepink.otf'
+                    size_hint_x: 0.7 
+        Button:
+            size_hint_y: 0.1
+            background_color: 0,0,1,0.8
+            text: 'Back'
+            font_size: 100
+            font_name: './fonts/absolutepink.otf'
+            on_press: app.play_plop_sound('HOME')
+
+<Level1Screen>:
+    on_enter: app.screen_on_enter(1)
+    on_leave: app.screen_on_leave(1)
+
+    FloatLayout:
+        id: layout_lvl1
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: './images/galaxybackground.jpg'
+    # Label:
+    #     id: score_lvl1
+    #     text: 'Score: 0'
+    #     color: 0,0,1,1
+    #     font_size: 100
+    #     font_name: './fonts/absolutepink.otf'
+    Label:
+        text: 'Level 1'
+        color: 0,0,1,1
+        font_size: 150
+        font_name: './fonts/absolutepink.otf'
+        pos_hint: {'center_x': .5, 'center_y': .95}
+        size: 300,150
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        text: 'Back'
+        color: 0,0,1,1
+        font_size: 100
+        font_name: './fonts/absolutepink.otf'
+        on_press: root.manager.current = 'LEVELS'
+        pos_hint: {'center_x': .95, 'center_y': .95}
+        size: 250, 100
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        on_press: root.manager.current = 'ADVANCE'
+        pos_hint: {'center_x': .93, 'center_y': .07}
+        size: 200, 200
+        size_hint: None, None
+        Image:
+            source: './images/portal.png'
+            y: self.parent.y
+            x: self.parent.x
+            size: 200, 200
+            allow_stretch: True
+
+<Level2Screen>:
+    on_enter: app.screen_on_enter(2)
+    on_leave: app.screen_on_leave(2)
+    FloatLayout:
+        id: layout_lvl2
+    Label:
+        text: 'Level 2'
+        color: 0,0,1,1
+        font_size: 150
+        font_name: './fonts/absolutepink.otf'
+        pos_hint: {'center_x': .5, 'center_y': .95}
+        size: 300,150
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        text: 'Back'
+        color: 0,0,1,1
+        font_size: 100
+        font_name: './fonts/absolutepink.otf'
+        on_press: root.manager.current = 'LEVELS'
+        pos_hint: {'center_x': .95, 'center_y': .95}
+        size: 250, 100
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        on_press: root.manager.current = 'ADVANCE'
+        pos_hint: {'center_x': .93, 'center_y': .07}
+        size: 200, 200
+        size_hint: None, None
+        Image:
+            source: './images/portal.png'
+            y: self.parent.y
+            x: self.parent.x
+            size: 200, 200
+            allow_stretch: True
+
+<Level3Screen>:
+    on_enter: app.screen_on_enter(3)
+    on_leave: app.screen_on_leave(3)
+    FloatLayout:
+        id: layout_lvl3
+    Label:
+        text: 'Level 3'
+        color: 0,0,1,1
+        font_size: 150
+        font_name: './fonts/absolutepink.otf'
+        pos_hint: {'center_x': .5, 'center_y': .95}
+        size: 300,150
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        text: 'Back'
+        color: 0,0,1,1
+        font_size: 100
+        font_name: './fonts/absolutepink.otf'
+        on_press: root.manager.current = 'LEVELS'
+        pos_hint: {'center_x': .95, 'center_y': .95}
+        size: 250, 100
+        size_hint: None, None
+    Button:
+        background_color: 0,0,0,0
+        on_press: root.manager.current = 'WIN'
+        pos_hint: {'center_x': .93, 'center_y': .07}
+        size: 200, 200
+        size_hint: None, None
+        Image:
+            source: './images/portal.png'
+            y: self.parent.y
+            x: self.parent.x
+            size: 200, 200
+            allow_stretch: True
+
+<AdvanceScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'Advance to the next round'
+            font_size: 100
+            font_name: './fonts/absolutepink.otf'
+        Button:
+            text: 'Advance to Level 2'
+            on_press: root.manager.current = 'LEVEL2'
+        Button:
+            text: 'Advance to Level 3'
+            on_press: root.manager.current = 'LEVEL3'
+
+<WinScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'You win!'
+            font_size: 50
+        Button:
+            text: 'Back Home'
+            on_press: root.manager.current = 'HOME'
+
+<LoseScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        Label:
+            text: 'You lose :('
+            font_size: 50
+        Button:
+            text: 'Try Again'
+            on_press: root.manager.current = 'LEVELS'
+
+
+
+
+
