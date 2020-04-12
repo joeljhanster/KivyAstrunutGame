@@ -213,7 +213,6 @@
         font_name: './fonts/absolutepink.otf'
         pos_hint: {'center_x': .5, 'center_y': .95}
         size: 300,150
-        size_hint: None, None
     Button:
         background_color: 0,0,0,0
         text: 'Back'
@@ -242,6 +241,17 @@
     on_leave: app.screen_on_leave(2)
     FloatLayout:
         id: layout_lvl2
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: './images/galaxybackground.jpg'
+    # Label:
+    #     id: score_lvl1
+    #     text: 'Score: 0'
+    #     color: 0,0,1,1
+    #     font_size: 100
+    #     font_name: './fonts/absolutepink.otf'
     Label:
         text: 'Level 2'
         color: 0,0,1,1
@@ -278,6 +288,17 @@
     on_leave: app.screen_on_leave(3)
     FloatLayout:
         id: layout_lvl3
+        canvas.before:
+            Rectangle:
+                pos: self.pos
+                size: self.size
+                source: './images/galaxybackground.jpg'
+    # Label:
+    #     id: score_lvl1
+    #     text: 'Score: 0'
+    #     color: 0,0,1,1
+    #     font_size: 100
+    #     font_name: './fonts/absolutepink.otf'
     Label:
         text: 'Level 3'
         color: 0,0,1,1

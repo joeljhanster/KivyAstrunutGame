@@ -17,9 +17,9 @@ import random
 
 # Before the window starts
 # Config.set('graphics', 'fullscreen', 'auto')
-Config.set('graphics', 'width', '412')
-Config.set('graphics', 'height', '732')
-# Window.size = (412, 732)
+# Config.set('graphics', 'width', '412')
+# Config.set('graphics', 'height', '732')
+Window.size = (412, 732)
 
 # Create the manager
 manager = ScreenManager(transition=FadeTransition())
@@ -63,8 +63,6 @@ class GameWidget(Widget):
         self.register_event_type("on_frame")
 
         with self.canvas:
-            # Rectangle(source="./images/galaxybackground.jpg", pos=self.pos,
-            #           size=(Window.width, Window.height))
             self._score_instruction = Rectangle(texture=self._score_label.texture, pos=(
                 0, Window.height - 50), size=self._score_label.texture.size)
         
@@ -78,20 +76,20 @@ class GameWidget(Widget):
 
         # Clock.schedule_interval(self.spawn_enemies, 2)
 
+    # Create instance objects from Star class
+    def spawn_stars(self, num_stars):
+        for i in range(num_stars):
+            star = Star()
+            self.add_entity(star)
+
     # Create instance objects from Blackhole class
     def spawn_blackhole(self, num_blackhole):
         for i in range(num_blackhole):
-            b = Blackhole()
-            self.add_entity(b)
-
-    # Create Star objects from Star class
-    def spawn_stars(self, num_stars):
-        for i in range(num_stars):
-            random_x = random.randint(Window.width*0.15, Window.width*0.85)     # randomize x-coordinate
-            random_y = random.randint(Window.height*0.5, Window.height*0.85)    # randomize y-coordinate
-            rand_size = random.randint(70,100)                                  # randomize size of stars
-            star = Star(random_x, random_y, rand_size)
-            self.add_entity(star)
+            random_x = random.uniform(Window.width*0.15, Window.width*0.85)     # randomize x-coordinate
+            random_y = random.uniform(Window.height*0.5, Window.height*0.85)    # randomize y-coordinate
+            rand_size = random.uniform(130,150)                                  # randomize size of stars
+            blackhole = Blackhole(random_x, random_y, rand_size)
+            self.add_entity(blackhole)
 
     def _on_frame(self, dt):
         self.dispatch("on_frame", dt)
@@ -160,11 +158,11 @@ class GameWidget(Widget):
         if text in self.keysPressed:
             self.keysPressed.remove(text)
 
-class Star:
+class Blackhole:
     def __init__(self, pos_x, pos_y, length):
         self.pos = (pos_x, pos_y)
         self.size = (length, length)
-        self.source = "./images/colourful.png"
+        self.source = "./images/blackhole.png"
         self._instruction = Rectangle(pos=self.pos, size=self.size, source=self.source)
 
 class Entity(object):
@@ -224,7 +222,7 @@ class Hook(Entity):
             game.remove_entity(self)
             return
         for e in game.colliding_entities(self):
-            if isinstance(e, Star): # checks whether collided object is e,Star
+            if isinstance(e, Blackhole): # checks whether collided object is e,Blackhole
                 game.add_entity(Explosion((e.pos[0]-150, e.pos[1]-150)))    # Depends on size of explosion
                 self.stop_callbacks()
                 game.remove_entity(self)
@@ -232,7 +230,7 @@ class Hook(Entity):
                 game.remove_entity(e)
                 game.score -= 100
                 return
-            elif isinstance(e, Blackhole):  # checks whether collided object is e,Blackhole
+            elif isinstance(e, Star):  # checks whether collided object is e,Star
                 game.add_entity(Explosion((e.pos[0]-150, e.pos[1]-150)))
                 self.stop_callbacks()
                 game.remove_entity(self)
@@ -259,41 +257,45 @@ class Explosion(Entity):
     def _remove_me(self, dt):
         game.remove_entity(self)
 
-class Blackhole(Entity):
+class Star(Entity):
     def __init__(self):
-        super(Blackhole,self).__init__()
-        self.source = './images/blackhole.png'
+        super(Star,self).__init__()
+        self.source = './images/star1.png'
+        self.size = (150, 150)
         self.pos = (Window.width/2, Window.height/2)
-        self.new_x, self.new_y = self.rand_side(False)
+        self.new_x, self.new_y = self.rand_side(False) #Boolean by default false, to initialise first point
 
         Clock.schedule_interval(self.change_dir, 0.05)
 
     def rand_side(self, new_dir):
         # Selects a random point within the side boundaries
-        left = (random.randint(Window.width* 0.05 ,Window.width*0.3), random.randint(Window.height*0.3,Window.height* 0.7))
-        right = (random.randint(Window.width*0.7, Window.width*0.90), random.randint(Window.height* 0.3,Window.height* 0.7))
-        top = (random.randint(Window.width*0.05 , Window.width* 0.90), random.randint(Window.height * 0.7, Window.height* 0.90))
-        bottom = (random.randint(Window.width * 0.05 , Window.width*0.90), random.randint(Window.height* 0.3, Window.height * 0.4))
+        left = (random.uniform(Window.width* 0.05, Window.width*0.3), random.uniform(Window.height*0.3,Window.height*0.7))
+        right = (random.uniform(Window.width*0.7, Window.width*0.90), random.uniform(Window.height*0.3,Window.height*0.7))
+        top = (random.uniform(Window.width*0.05, Window.width* 0.90), random.uniform(Window.height*0.7, Window.height*0.90))
+        bottom = (random.uniform(Window.width*0.05, Window.width*0.90), random.uniform(Window.height*0.3, Window.height*0.4))
+        
+        # Selects the coordinates that the star will move towards
         if (not new_dir):
             # Initializing the first random point
             self.new_x, self.new_y = random.choice([left,right,top,bottom])
         else:
-            # Blackhole is at the left
+            # Star is at the left
             if (self.new_x <= Window.width*0.3):
                 self.new_x, self.new_y = random.choice([right, top, bottom])
-            # Blackhole is at the right
+            # Star is at the right
             elif (self.new_x >= Window.width*0.7):
                 self.new_x, self.new_y = random.choice([left, top, bottom])
-            # Blackhole is at the top
+            # Star is at the top
             elif (self.new_y <= Window.height*0.4):
                 self.new_x, self.new_y = random.choice([top, left, right])
-            # Blackhole is at the bottom
+            # Star is at the bottom
             elif (self.new_y >= Window.height*0.7):
                 self.new_x, self.new_y = random.choice([bottom, left, right])
+        
         return self.new_x, self.new_y
 
     def change_dir(self, dt):
-        # Controls the speed of the blackhole
+        # Controls the speed of the star
         step_size = 300 * dt
 
         # Move towards the direction of the new position
@@ -306,11 +308,11 @@ class Blackhole(Entity):
         elif (self.pos[1] > self.new_y):
             new_y = self.pos[1] - step_size
 
-        # Assigns new position of blackhole after moving
+        # Assigns new position of star after moving
         self.pos = (new_x, new_y)
         
-        # Signifies that blackhole changes direction
-        if (abs(self.new_x - self.pos[0]) <= step_size or abs(self.new_y - self.pos[1]) <= step_size):
+        # Checks if it's within the range of target point. Signifies that star changes direction
+        if (abs(self.new_x - self.pos[0]) <= step_size/2 or abs(self.new_y - self.pos[1]) <= step_size/2):
             self.rand_side(True)
 
 class Player(Entity):
@@ -337,9 +339,10 @@ class Player(Entity):
         step_size = 350 * dt
         newx = self.pos[0]
         newy = self.pos[1]
-        if "a" in game.keysPressed:
+        # Window boundary = [0,Window.width-self.size[0]]
+        if "a" in game.keysPressed and newx > 0:
             newx -= step_size
-        if "d" in game.keysPressed:
+        if "d" in game.keysPressed and newx < Window.width-self.size[0]:
             newx += step_size
         self.pos = (newx, newy)
 
@@ -423,8 +426,8 @@ class MyApp(App):
 
     def screen_on_enter(self, screenNum):
         game.score = 0
-        game.spawn_stars(screenNum * 5)
-        game.spawn_blackhole(screenNum)
+        game.spawn_blackhole(screenNum * 5)
+        game.spawn_stars(screenNum)
 
         curr_screen = self.root.screens[screenNum]
         curr_screen.ids['layout_lvl'+str(screenNum)].add_widget(game)
