@@ -4,15 +4,18 @@
 <HomeScreen>:
     BoxLayout:
         orientation: 'vertical'
-        BoxLayout:
+        #arranged components on top of each other
+        BoxLayout: 
             size_hint_y: 0.08
             Label:
                 text: 'Welcome to Astunut!'
                 font_size: 100
                 font_name: './fonts/absolutepink.otf'
-        FloatLayout:
+        #no restrictions
+        FloatLayout: 
             size_hint_y: 0.92
-            canvas.before:
+            #getting the before group
+            canvas.before: 
                 Rectangle:
                     pos: self.pos
                     size: self.size
@@ -45,10 +48,13 @@
                     size_hint: None, None
 
 <LevelsScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        FloatLayout:
-            size_hint_y: 0.9
+#represents the entire screen, to enable the use of size_hint_y
+    BoxLayout: 
+        #stacked vertically 
+        orientation: 'vertical' 
+        FloatLayout: 
+        #size for the top, dimension from the parent boxlayout
+            size_hint_y: 0.9  
             canvas.before:
                 Rectangle:
                     pos: self.pos
@@ -62,10 +68,12 @@
                 size_hint: None, None
                 Image:
                     source: './images/star.png'
-                    y: self.parent.y
+                    #scale image to be the same as the button, when clicked it act as a button
+                    y: self.parent.y 
                     x: self.parent.x
-                    size: 200, 200
-                    allow_stretch: True
+                    size: 200, 200  
+                    #allows image according to the size 
+                    allow_stretch: True 
             Label:
                 text: 'Level 1'
                 font_size: 50
@@ -106,7 +114,7 @@
                 font_name: './fonts/halfelvencond.ttf'
                 pos_hint: {'center_x': .5, 'center_y':.13}
         BoxLayout:
-            size_hint_y: 0.1
+            size_hint_y: 0.1 #size for back button 
             Button:
                 background_color: 0,0,1,0.8
                 text: 'Back'
@@ -190,11 +198,13 @@
             on_press: app.play_plop_sound('HOME')
 
 <Level1Screen>:
-    on_enter: app.screen_on_enter(1)
-    on_leave: app.screen_on_leave(1)
+#1 refers to screenNum 1=> LEVEL1
+    on_enter: app.screen_on_enter(1) 
+    on_pre_leave: app.screen_on_leave(1)
 
     FloatLayout:
-        id: layout_lvl1
+    #giving the float layout an id
+        id: layout_lvl1 
         canvas.before:
             Rectangle:
                 pos: self.pos
@@ -223,22 +233,22 @@
         pos_hint: {'center_x': .95, 'center_y': .95}
         size: 250, 100
         size_hint: None, None
-    Button:
-        background_color: 0,0,0,0
-        on_press: root.manager.current = 'ADVANCE'
-        pos_hint: {'center_x': .93, 'center_y': .07}
-        size: 200, 200
-        size_hint: None, None
-        Image:
-            source: './images/portal.png'
-            y: self.parent.y
-            x: self.parent.x
-            size: 200, 200
-            allow_stretch: True
+    # Button:
+    #     background_color: 0,0,0,0
+    #     on_press: root.manager.current = 'ADVANCE'
+    #     pos_hint: {'center_x': .93, 'center_y': .07}
+    #     size: 200, 200
+    #     size_hint: None, None
+    #     Image:
+    #         source: './images/portal.png'
+    #         y: self.parent.y
+    #         x: self.parent.x
+    #         size: 200, 200
+    #         allow_stretch: True
 
 <Level2Screen>:
     on_enter: app.screen_on_enter(2)
-    on_leave: app.screen_on_leave(2)
+    on_pre_leave: app.screen_on_leave(2)
     FloatLayout:
         id: layout_lvl2
         canvas.before:
@@ -270,22 +280,23 @@
         pos_hint: {'center_x': .95, 'center_y': .95}
         size: 250, 100
         size_hint: None, None
-    Button:
-        background_color: 0,0,0,0
-        on_press: root.manager.current = 'ADVANCE'
-        pos_hint: {'center_x': .93, 'center_y': .07}
-        size: 200, 200
-        size_hint: None, None
-        Image:
-            source: './images/portal.png'
-            y: self.parent.y
-            x: self.parent.x
-            size: 200, 200
-            allow_stretch: True
+    # Button:
+    #     background_color: 0,0,0,0
+    #     on_press: root.manager.current = 'ADVANCE'
+    #     pos_hint: {'center_x': .93, 'center_y': .07}
+    #     size: 200, 200
+    #     size_hint: None, None
+    #     Image:
+    #         source: './images/portal.png'
+    #         y: self.parent.y
+    #         x: self.parent.x
+    #         size: 200, 200
+    #         allow_stretch: True
 
 <Level3Screen>:
     on_enter: app.screen_on_enter(3)
-    on_leave: app.screen_on_leave(3)
+    #on_pre_leave => before it changes screen, it executes screen_on_leave
+    on_pre_leave: app.screen_on_leave(3)
     FloatLayout:
         id: layout_lvl3
         canvas.before:
@@ -317,18 +328,18 @@
         pos_hint: {'center_x': .95, 'center_y': .95}
         size: 250, 100
         size_hint: None, None
-    Button:
-        background_color: 0,0,0,0
-        on_press: root.manager.current = 'WIN'
-        pos_hint: {'center_x': .93, 'center_y': .07}
-        size: 200, 200
-        size_hint: None, None
-        Image:
-            source: './images/portal.png'
-            y: self.parent.y
-            x: self.parent.x
-            size: 200, 200
-            allow_stretch: True
+    # Button:
+    #     background_color: 0,0,0,0
+    #     on_press: root.manager.current = 'WIN'
+    #     pos_hint: {'center_x': .93, 'center_y': .07}
+    #     size: 200, 200
+    #     size_hint: None, None
+    #     Image:
+    #         source: './images/portal.png'
+    #         y: self.parent.y
+    #         x: self.parent.x
+    #         size: 200, 200
+    #         allow_stretch: True
 
 <AdvanceScreen>:
     BoxLayout:
