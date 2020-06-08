@@ -1,6 +1,10 @@
 # KivyAstunutGame
 The Astunut Game is a GUI-based Kivy app using Python. This game is about a lonely astronaut who loves music and is on a mission to collect the musical notes of the galaxy which are stars. However, as the level advances, dangerous blackholes appear which will harm his life when it is being shot. Beware of cute yet annoying creatures of space which will try and disturb the astronaut! Help the astronaut to finish his mission and bring him back home! 
 
+<p align=center>
+  <img src="https://github.com/joeljhanster/KivyAstrunutGame/blob/master/images/demo.png" width=80% />
+</p>
+
 # How to play your game:
 
 To view instructions, click on compass.
