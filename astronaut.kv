@@ -34,8 +34,8 @@
                 pos_hint: {'x': .5, 'y': .2}
                 Image:
                     source: './images/astro.png'
-                    pos_hint: {'center_x': 0, 'y': 0}
-                    size: 200,200
+                    pos_hint: {'center_x': 0, 'y': .5}
+                    size: 250,250
                     size_hint: None, None
                 Button:
                     background_color: 0.1,0.3,0.7,0.8
@@ -136,16 +136,16 @@
             GridLayout:
                 size_hint_y: 0.9
                 cols: 2
-                spacing: (40,10)
                 Image:
                     source: './images/astro.png'
                     size_hint_x: 0.3
                 Label:
-                    text: 'Hello, I am lonely and love music.\nStars are musical notes of the galaxy.\nHelp me collect them all!'
+                    text: "Hello, I am lonely and love music.\nStars are musical notes of the galaxy. Help me collect them all!\n Press 'A' to move left, 'D' to move right, 'W' to jump!"
                     multiline: True
                     valign: 'middle'
+                    #takes size of label 
                     text_size: self.size
-                    font_size: 70
+                    font_size: 65
                     font_name: './fonts/absolutepink.otf'
                     size_hint_x: 0.7
                 Image:
@@ -160,7 +160,7 @@
                     font_name: './fonts/absolutepink.otf'
                     size_hint_x: 0.7
                 Image:
-                    source: './images/star.png'
+                    source: './images/star3.png'
                     size_hint_x: 0.3
                 Label:
                     text: 'Collect ALL the Stars!'
@@ -218,7 +218,6 @@
     #     font_name: './fonts/absolutepink.otf'
     Label:
         text: 'Level 1'
-        color: 0,0,1,1
         font_size: 150
         font_name: './fonts/absolutepink.otf'
         pos_hint: {'center_x': .5, 'center_y': .95}
@@ -226,7 +225,6 @@
     Button:
         background_color: 0,0,0,0
         text: 'Back'
-        color: 0,0,1,1
         font_size: 100
         font_name: './fonts/absolutepink.otf'
         on_press: root.manager.current = 'LEVELS'
@@ -264,7 +262,6 @@
     #     font_name: './fonts/absolutepink.otf'
     Label:
         text: 'Level 2'
-        color: 0,0,1,1
         font_size: 150
         font_name: './fonts/absolutepink.otf'
         pos_hint: {'center_x': .5, 'center_y': .95}
@@ -273,7 +270,6 @@
     Button:
         background_color: 0,0,0,0
         text: 'Back'
-        color: 0,0,1,1
         font_size: 100
         font_name: './fonts/absolutepink.otf'
         on_press: root.manager.current = 'LEVELS'
@@ -312,7 +308,6 @@
     #     font_name: './fonts/absolutepink.otf'
     Label:
         text: 'Level 3'
-        color: 0,0,1,1
         font_size: 150
         font_name: './fonts/absolutepink.otf'
         pos_hint: {'center_x': .5, 'center_y': .95}
@@ -321,7 +316,6 @@
     Button:
         background_color: 0,0,0,0
         text: 'Back'
-        color: 0,0,1,1
         font_size: 100
         font_name: './fonts/absolutepink.otf'
         on_press: root.manager.current = 'LEVELS'
@@ -341,40 +335,92 @@
     #         size: 200, 200
     #         allow_stretch: True
 
-<AdvanceScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        Label:
-            text: 'Advance to the next round'
-            font_size: 100
-            font_name: './fonts/absolutepink.otf'
-        Button:
-            text: 'Advance to Level 2'
-            on_press: root.manager.current = 'LEVEL2'
-        Button:
-            text: 'Advance to Level 3'
-            on_press: root.manager.current = 'LEVEL3'
+ 
+        # FloatLayout: 
+        # #size for the top, dimension from the parent boxlayout
+        #     size_hint_y: 0.9  
+            
+        #     Button:
+        #         background_color: 0,0,0,0
+        #         on_press: app.play_star_sound('LEVEL1')
+        #         pos_hint: {'center_x': .5, 'center_y': .75}
+        #         size: 200, 200
+        #         size_hint: None, None
+        #         Image:
+        #             source: './images/star.png'
+        #             #scale image to be the same as the button, when clicked it act as a button
+        #             y: self.parent.y 
+        #             x: self.parent.x
+        #             size: 200, 200  
+        #             #allows image according to the size 
+        #             allow_stretch: True 
+
 
 <WinScreen>:
     BoxLayout:
         orientation: 'vertical'
-        Label:
-            text: 'You win!'
-            font_size: 50
-        Button:
-            text: 'Back Home'
-            on_press: root.manager.current = 'HOME'
+        FloatLayout: 
+        #size for the top, dimension from the parent boxlayout
+            canvas.before:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: './images/galaxybackground.jpg'
+
+            Label:
+                text: "You Win!"
+                font_size: 500
+                font_name: './fonts/absolutepink.otf'
+                pos_hint: {'center_x': .5, 'center_y': .6}
+            
+            Button:
+                background_color: 0,0,0,0
+                on_press: app.play_plop_sound('HOME')
+                pos_hint: {'center_x': .5, 'center_y': .30}
+                size: 500,500
+                size_hint: None, None
+                Image:
+                    source: './images/backhome.png'
+                    #parent is the button. to scale to same size
+                    y: self.parent.y 
+                    x: self.parent.x
+                    size: 500,500
+                    #allows image according to the size 
+                    allow_stretch: True 
+            
 
 <LoseScreen>:
     BoxLayout:
         orientation: 'vertical'
-        Label:
-            text: 'You lose :('
-            font_size: 50
-        Button:
-            text: 'Try Again'
-            on_press: root.manager.current = 'LEVELS'
+        FloatLayout: 
+        #size for the top, dimension from the parent boxlayout
+            canvas.before:
+                Rectangle:
+                    pos: self.pos
+                    size: self.size
+                    source: './images/youlose.jpg'
 
+            Label:
+                text: "You Lose!"
+                colour: 1,0,1,1
+                font_size: 500
+                font_name: './fonts/absolutepink.otf'
+                pos_hint: {'center_x': .5, 'center_y': .6}
+            
+            Button:
+                background_color: 0,0,0,0
+                on_press: app.play_plop_sound('LEVELS')
+                pos_hint: {'center_x': .5, 'center_y': .30}
+                size: 500,500
+                size_hint: None, None
+                Image:
+                    source: './images/replay.png'
+                    #parent is the button. to scale to same size
+                    y: self.parent.y 
+                    x: self.parent.x
+                    size: 500,500
+                    #allows image according to the size 
+                    allow_stretch: True 
 
 
 

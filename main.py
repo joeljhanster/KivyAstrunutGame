@@ -1,5 +1,3 @@
-# from libdw import sm
-
 from kivy.config import Config
 from kivy.app import App
 from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition
@@ -16,9 +14,6 @@ from kivy.graphics import Rectangle
 import random
 
 # Before the window starts
-# Config.set('graphics', 'fullscreen', 'auto')
-# Config.set('graphics', 'width', '412')
-# Config.set('graphics', 'height', '732')
 Window.size = (900,600)
 
 # Create the manager
@@ -37,27 +32,12 @@ class InstructionsScreen(Screen):
     pass
 
 class Level1Screen(Screen):
-    # astronaut_killed = False
-    # num_stars = 5
-    # num_stars_collected = 0
-    # num_blackholes = 0
-    # num_animals = 0
     pass
 
 class Level2Screen(Screen):
-    # astronaut_killed = False
-    # num_stars = 8
-    # num_stars_collected = 0
-    # num_blackholes = 3
-    # num_animals = 0
     pass
 
 class Level3Screen(Screen):
-    # astronaut_killed = False
-    # num_stars = 12
-    # num_stars_collected = 0
-    # num_blackholes = 5
-    # num_animals = 3
     pass
 
 class AdvanceScreen(Screen):
@@ -82,16 +62,13 @@ manager.add_widget(LoseScreen(name="LOSE"))
 
 
 class GameWidget(Widget):
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs): #**kwargs is a dictionary of keyword arguments
         super(GameWidget,self).__init__(**kwargs)
 
         self._keyboard = Window.request_keyboard(self._on_keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_key_down)
         self._keyboard.bind(on_key_up=self._on_key_up)
 
-        # self._score_label = CoreLabel(text="Score: 0", font_size=50, font_name='./fonts/absolutepink.otf')
-        # self._score_label.refresh()
-        # self._score = 0
         self._lives_label = CoreLabel(text="Lives: 0", font_size=100, font_name='./fonts/absolutepink.otf')
         self._lives_label.refresh()
         self._lives = 3
@@ -99,6 +76,7 @@ class GameWidget(Widget):
         self._stars = -1 #to initialise, however will never get this value 
         self._levels = 0 #initialise 
         self._num_portals = 0
+        #Registering event types allows the dispatcher to validate event handler names as they are attached and to search attached objects for suitable handlers.
         self.register_event_type("on_frame")
 
         with self.canvas:
@@ -134,9 +112,6 @@ class GameWidget(Widget):
             self.add_entity(self._portal)
             self._num_portals += 1 #ensures that it only appears once
         #if position of player within pos of portal, advance to nxt lvl + remove canvas widget 
-        # for entity in self._entities:
-        #     if isinstance(entity, Portal):
-        #         portal = entity 
 
         if (self.player.pos[0] + self.player.size[0]/2) >= (self._portal.pos[0] + self._portal.size[0]/2):
             self.stars = -1 #to ensure constant looping 
@@ -157,13 +132,13 @@ class GameWidget(Widget):
             random_x = random.uniform(Window.width*0.15, Window.width*0.85)     # randomize x-coordinate
             random_y = random.uniform(Window.height*0.5, Window.height*0.85)    # randomize y-coordinate
             rand_pos = (random_x, random_y)
-            rand_length = random.uniform(110,150)                                  # randomize size of stars
+            rand_length = random.uniform(200,250)                                  # randomize size of stars
             blackhole = Blackhole(rand_pos, rand_length) #called the class Blackhole
             self.add_entity(blackhole)
     
     def remove_all(self):
         for entity in self._entities.copy(): #.copy() to allow iteration through all elements while elements in original list is being romved 
-            if isinstance(entity, Star) or isinstance(entity, Blackhole) or isinstance(entity, Hook) or isinstance(entity, Portal):
+            if isinstance(entity, Star) or isinstance(entity, Blackhole) or isinstance(entity, Hook) or isinstance(entity, Portal) or isinstance(entity, Animal):
                 self.remove_entity(entity)
 
     def _on_frame(self, dt):
@@ -198,21 +173,7 @@ class GameWidget(Widget):
 
     @levels.setter
     def levels(self, value):
-        self._levels = value  
-
-
-
-    # @property
-    # def score(self):
-    #     return self._score
-
-    # @score.setter
-    # def score(self, value):
-    #     self._score = value
-    #     self._score_label.text = "Score: " + str(value)
-    #     self._score_label.refresh()
-    #     self._score_instruction.texture = self._score_label.texture
-    #     self._score_instruction.size = self._score_label.texture.size
+        self._levels = value
 
     def add_entity(self, entity):
         self._entities.add(entity)
@@ -308,7 +269,7 @@ class Portal(Entity):
 class Animal(Entity):
     def __init__(self):
         super(Animal,self).__init__()
-        self.size = (100,100)
+        self.size = (150,150)
         self.pos = (0,0)
         self.source = "./images/porcupine.png"
         self.direction = "right"
@@ -327,7 +288,7 @@ class Animal(Entity):
         self.stepsize = 200 * dt
         newx = self.pos[0]
         newy = self.pos[1]
-        command = game.player.push_animal(self)
+        command = game.player.command_animal(self)
 
         if command == True:
             self.change_direction()
@@ -368,7 +329,7 @@ class Hook(Entity):
         self.size = (45, Window.height)
         game.bind(on_frame=self.move_step)
 
-    def stop_callbacks(self):
+    def stop_callbacks(self): #stops it from moving 
         game.unbind(on_frame=self.move_step)
 
     def move_step(self, sender, dt):
@@ -382,9 +343,7 @@ class Hook(Entity):
                 game.add_entity(Explosion((e.pos[0]-150, e.pos[1]-150)))    # Depends on size of explosion
                 self.stop_callbacks()
                 game.remove_entity(self)
-                # e.stop_callbacks()
                 game.remove_entity(e)
-                # game.score -= 100 
                 game.lives -= 1
                 return
                 
@@ -393,7 +352,6 @@ class Hook(Entity):
                 self.stop_callbacks()
                 game.remove_entity(self)
                 game.remove_entity(e)
-                # game.score += 10000
                 game.stars -= 1
 
         # move
@@ -407,11 +365,11 @@ class Explosion(Entity):
         super(Explosion,self).__init__()
         self.size = (300, 300)
         self.pos = pos
-        self.source = './images/sparkle.png'
+        self.source = './images/sparkle5.png'
 
         sound = SoundLoader.load('./music/star3.wav')
         sound.play()
-        Clock.schedule_once(self._remove_me, 0.1)
+        Clock.schedule_once(self._remove_me, 0.15)
 
     def _remove_me(self, dt):
         game.remove_entity(self)
@@ -419,8 +377,8 @@ class Explosion(Entity):
 class Star(Entity):
     def __init__(self):
         super(Star,self).__init__()
-        self.source = './images/star1.png'
-        self.size = (150, 150)
+        self.source = './images/star3.png'
+        self.size = (200, 200)
         self.pos = (Window.width/2, Window.height/2)
         self.new_x, self.new_y = self.rand_side(False) #Boolean by default false, to initialise first point
 
@@ -477,16 +435,11 @@ class Star(Entity):
 class Player(Entity):
     def __init__(self):
         super(Player,self).__init__()
-        self.source = './images/astro.png'
+        self.source = './images/astroprof.png'
         game.bind(on_frame=self.move_step)
         self._shoot_event = Clock.schedule_interval(self.shoot_step, 0.3)
         self.pos = (400,0)
         self.dist_moved = 0
-        # self.jumping = True
-
-    def stop_callbacks(self):
-        game.unbind(on_frame=self.move_step)
-        self._shoot_event.cancel()
 
     def shoot_step(self, dt):
         # shoot
@@ -515,7 +468,7 @@ class Player(Entity):
         self.pos = (newx, newy)
         return step_size  #used to change speed of animal 
     
-    def push_animal(self, animal):
+    def command_animal(self, animal):
         command = False
 
         #when in contact with animal, set a distance counter whereby if reached, the animal will change its direction
@@ -572,63 +525,12 @@ class Player(Entity):
         
         self.pos = (newx, newy)
 
-
-#############################################################
-
-# # Inheritance - Screen is the Super Class
-# class HomeScreen(Screen):
-#     pass
-
-# class LevelsScreen(Screen):
-#     pass
-
-# class InstructionsScreen(Screen):
-#     pass
-
-# class Level1Screen(Screen):
-#     # astronaut_killed = False
-#     # num_stars = 5
-#     # num_stars_collected = 0
-#     # num_blackholes = 0
-#     # num_animals = 0
-#     pass
-
-# class Level2Screen(Screen):
-#     # astronaut_killed = False
-#     # num_stars = 8
-#     # num_stars_collected = 0
-#     # num_blackholes = 3
-#     # num_animals = 0
-#     pass
-
-# class Level3Screen(Screen):
-#     # astronaut_killed = False
-#     # num_stars = 12
-#     # num_stars_collected = 0
-#     # num_blackholes = 5
-#     # num_animals = 3
-#     pass
-
-# class AdvanceScreen(Screen):
-#     pass
-
-# class WinScreen(Screen):
-#     pass
-
-# class LoseScreen(Screen):
-#     pass
-
 game = GameWidget()
 game.player = Player()
 game.player.pos = (Window.width/2, 0)
 game.add_entity(game.player)
 
-# player2 = Player()
-# player2.pos = (Window.width/3, 0)
-# player2.source = './images/porcupine.png'
-# game.add_entity(player2)
-
-# Build the Astronaut App
+# Build the Astunut App
 class MyApp(App):
     # Initialize when app starts
     def on_start(self): 
@@ -651,7 +553,6 @@ class MyApp(App):
         manager.current = screenName
 
     def screen_on_enter(self, screenNum):
-        # game.score = 0 #initialise score to be 0
         game.levels = screenNum
         game.lives = 3
         game.remove_all()
@@ -671,21 +572,6 @@ class MyApp(App):
         curr_screen.ids['layout_lvl'+str(screenNum)].remove_widget(game)
 
     def build(self):
-        # # Load KV file
-        # Builder.load_file("astronaut.kv")
-
-        # # Add Screen widgets to Screen Manager, goes in order i.e. 0 = "HOME", 1 = "LEVEL1"
-        # manager.add_widget(HomeScreen(name="HOME"))
-        # manager.add_widget(Level1Screen(name="LEVEL1"))
-        # manager.add_widget(Level2Screen(name="LEVEL2"))
-        # manager.add_widget(Level3Screen(name="LEVEL3"))
-        # manager.add_widget(LevelsScreen(name="LEVELS"))
-        # manager.add_widget(InstructionsScreen(name="INSTRUCTIONS"))
-        # manager.add_widget(AdvanceScreen(name="ADVANCE"))
-        # manager.add_widget(WinScreen(name="WIN"))
-        # manager.add_widget(LoseScreen(name="LOSE"))
-
-        # Display the Home Screen as the first screen when entered
         manager.current = "HOME"
         return manager
 
