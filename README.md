@@ -20,6 +20,11 @@ from your phone on the same Wi‑Fi).
 use `A`/`D`, `W`, and `Space`. The web version reuses the original art and music and
 plays best in **landscape**. The original Python/Kivy desktop game below is unchanged.
 
+**10 levels of rising difficulty:** more stars to collect and more black holes each
+level, then **drifting black holes** (lvl 4+), **falling comets to dodge** (lvl 5+),
+and **multiple porcupines** (lvl 7+). Clear all the stars to open the portal and
+advance; survive to level 10 to win.
+
 ---
 
 The Astunut Game is a GUI-based Kivy app using Python. This game is about a lonely astronaut who loves music and is on a mission to collect the musical notes of the galaxy which are stars. However, as the level advances, dangerous blackholes appear which will harm his life when it is being shot. Beware of cute yet annoying creatures of space which will try and disturb the astronaut! Help the astronaut to finish his mission and bring him back home! 

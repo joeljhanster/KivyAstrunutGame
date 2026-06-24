@@ -61,14 +61,20 @@
   .btn.pink { background: linear-gradient(180deg,#ff7ad0,#b3247e); box-shadow: 0 6px 0 #6e1450, 0 10px 22px rgba(0,0,0,.5); }
   .btn.ghost { background: rgba(255,255,255,.12); box-shadow: 0 6px 0 rgba(0,0,0,.35); }
 
-  .star-pick { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; }
+  .star-pick { display:flex; flex-wrap:wrap; gap:4px 8px; justify-content:center; align-items:center; max-width: 560px; }
   .star-btn {
+    position: relative;
     background: none; border: none; cursor: pointer; color: #fff;
-    display:flex; flex-direction:column; align-items:center; gap:4px;
-    font-family:'HalfElven',sans-serif; font-size: clamp(16px,4vw,24px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    font-family:'HalfElven',sans-serif;
   }
-  .star-btn img { width: clamp(80px, 22vw, 150px); height: auto; filter: drop-shadow(0 0 12px rgba(255,255,150,.6)); transition: transform .1s; }
+  .star-btn img { width: clamp(52px, 15vw, 92px); height: auto; filter: drop-shadow(0 0 10px rgba(255,255,150,.6)); transition: transform .1s; }
   .star-btn:active img { transform: scale(.9); }
+  .lvl-num {
+    position:absolute; top:48%; left:50%; transform:translate(-50%,-50%);
+    font-family:'AbsolutePink',cursive; font-size: clamp(18px,5vw,30px);
+    color:#5a2a8a; text-shadow:0 1px 2px rgba(255,255,255,.7); pointer-events:none;
+  }
 
   .instr { max-width: 720px; background: rgba(10,4,30,.6); border-radius:18px; padding: 18px 22px; }
   .instr-row { display:flex; align-items:center; gap:16px; margin: 12px 0; text-align:left; font-size: clamp(14px,3.4vw,20px); }
@@ -166,11 +172,7 @@
 <!-- LEVELS -->
 <div id="screen-levels" class="screen bg">
   <h1 class="title">Pick a Level</h1>
-  <div class="star-pick">
-    <button class="star-btn" data-level="1"><img src="images/star.png" alt="" />Level 1</button>
-    <button class="star-btn" data-level="2"><img src="images/star.png" alt="" />Level 2</button>
-    <button class="star-btn" data-level="3"><img src="images/star.png" alt="" />Level 3</button>
-  </div>
+  <div class="star-pick" id="levelGrid"></div>
   <button class="btn ghost" data-go="home" style="margin-top:24px">Back</button>
 </div>
 
@@ -182,7 +184,8 @@
     <div class="instr-row"><img src="images/arrow.png" alt="" /><span>Tap <b>FIRE</b> (or <kbd>Space</kbd>) to shoot your hook straight up.</span></div>
     <div class="instr-row"><img src="images/star.png" alt="" /><span>Shoot <b>every star</b> to clear the level — then walk into the portal that appears.</span></div>
     <div class="instr-row"><img src="images/blackhole.png" alt="" /><span>Avoid shooting <b>black holes</b> — each one costs a life. You have 3.</span></div>
-    <div class="instr-row"><img src="images/porcupine.png" alt="" /><span>Level 3: a cheeky creature shoves you around. Jump over it or push back!</span></div>
+    <div class="instr-row"><img src="images/porcupine.png" alt="" /><span>From level 3: cheeky creatures shove you around. Jump over them or push back!</span></div>
+    <div class="instr-row"><span style="font-size:40px">☄️</span><span>From level 5: <b>dodge the falling comets</b> — getting hit costs a life. Black holes start <b>drifting</b> too. 10 levels, rising chaos!</span></div>
   </div>
   <button class="btn ghost" data-go="home" style="margin-top:18px">Back</button>
 </div>
@@ -296,8 +299,9 @@
   }
 
   class Star {
-    constructor() {
+    constructor(speed) {
       this.w = 90; this.h = 90; this.x = VW/2; this.y = VH/2; this.dead = false;
+      this.speed = speed || 220;
       [this.tx, this.ty] = this.pick(false);
     }
     get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
@@ -315,7 +319,7 @@
       return choices[(Math.random()*choices.length)|0];
     }
     update(dt) {
-      const step = 220 * dt;
+      const step = this.speed * dt;
       if (this.x < this.tx) this.x += step; else if (this.x > this.tx) this.x -= step;
       if (this.y < this.ty) this.y += step; else if (this.y > this.ty) this.y -= step;
       if (Math.abs(this.tx - this.x) <= step || Math.abs(this.ty - this.y) <= step) {
@@ -326,23 +330,42 @@
   }
 
   class BlackHole {
-    constructor() {
-      const s = rand(90, 120);
+    constructor(moving) {
+      const s = rand(85, 115);
       this.w = s; this.h = s;
-      this.x = rand(VW*0.12, VW*0.85 - s);
-      this.y = rand(VH*0.40, VH*0.82 - s);
+      this.x = rand(VW*0.10, VW*0.86 - s);
+      this.y = rand(VH*0.42, VH*0.84 - s);
       this.dead = false; this.t = Math.random()*6;
+      this.moving = !!moving;
+      const sp = rand(55, 115), ang = rand(0, Math.PI*2);
+      this.vx = moving ? Math.cos(ang)*sp : 0;
+      this.vy = moving ? Math.sin(ang)*sp*0.6 : 0;
     }
     get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
-    update(dt) { this.t += dt; }
+    update(dt) {
+      this.t += dt;
+      if (!this.moving) return;
+      this.x += this.vx * dt; this.y += this.vy * dt;
+      const minX = VW*0.04, maxX = VW*0.92 - this.w;
+      const minY = VH*0.34, maxY = VH*0.88 - this.h;
+      if (this.x < minX) { this.x = minX; this.vx =  Math.abs(this.vx); }
+      if (this.x > maxX) { this.x = maxX; this.vx = -Math.abs(this.vx); }
+      if (this.y < minY) { this.y = minY; this.vy =  Math.abs(this.vy); }
+      if (this.y > maxY) { this.y = maxY; this.vy = -Math.abs(this.vy); }
+    }
     // rendered by drawBlackHole() so it can rotate around its centre
   }
 
   class Animal {
-    constructor() { this.w = 110; this.h = 110; this.x = 0; this.y = 0; this.dir = 1; this.dead = false; }
+    constructor(i, speed) {
+      this.w = 110; this.h = 110; this.y = 0; this.dead = false;
+      this.dir = (i % 2 === 0) ? 1 : -1;
+      this.x = (i % 2 === 0) ? -this.w - i*140 : VW + i*140;
+      this.speed = speed || 150;
+    }
     get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
     update(dt) {
-      this.x += this.dir * 150 * dt;
+      this.x += this.dir * this.speed * dt;
       if (this.x > VW) this.x = -this.w;
       if (this.x < -this.w) this.x = VW;
     }
@@ -362,6 +385,43 @@
     draw() { drawImg(IMG.portal, this.x, this.y, this.w, this.h); }
   }
 
+  // Falling hazard: drops from the top, costs a life if it hits the player.
+  class Comet {
+    constructor() {
+      this.w = 58; this.h = 58;
+      this.x = rand(VW*0.05, VW*0.90);
+      this.y = VH + this.h;                 // start just above the top
+      this.vx = rand(-45, 45);
+      this.vy = -rand(300, 440);            // world y decreases as it falls
+      this.dead = false;
+    }
+    get box() { return { x: this.x + 10, y: this.y + 10, w: this.w - 20, h: this.h - 20 }; }
+    update(dt) {
+      this.x += this.vx * dt; this.y += this.vy * dt;
+      if (this.y < -this.h) this.dead = true;
+    }
+    draw() {
+      const cx = this.x + this.w/2, cy = VH - this.y - this.h/2;
+      // tail streaking back up behind it
+      const tg = ctx.createLinearGradient(cx, cy - this.h*1.8, cx, cy);
+      tg.addColorStop(0, 'rgba(150,210,255,0)');
+      tg.addColorStop(1, 'rgba(190,235,255,0.85)');
+      ctx.fillStyle = tg;
+      ctx.beginPath();
+      ctx.moveTo(cx - this.w*0.20, cy);
+      ctx.lineTo(cx + this.w*0.20, cy);
+      ctx.lineTo(cx, cy - this.h*1.8);
+      ctx.closePath(); ctx.fill();
+      // glowing head
+      const hg = ctx.createRadialGradient(cx, cy, 2, cx, cy, this.w*0.5);
+      hg.addColorStop(0, '#ffffff');
+      hg.addColorStop(0.45, '#7fd0ff');
+      hg.addColorStop(1, 'rgba(60,120,200,0)');
+      ctx.fillStyle = hg;
+      ctx.beginPath(); ctx.arc(cx, cy, this.w*0.5, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
   class Flash {
     constructor(x, y) { this.x = x; this.y = y; this.r = 10; this.life = 0.35; this.dead = false; }
     update(dt) { this.life -= dt; this.r += 420 * dt; if (this.life <= 0) this.dead = true; }
@@ -375,22 +435,44 @@
     }
   }
 
+  // ---------- Level design (1 → 10, rising difficulty) ----------
+  // stars: collect-all target | starSpeed: px/s | holes: black holes (shooting one costs a life)
+  // moveHoles: how many of those drift | animals: porcupines | animalSpeed: px/s
+  // comets: falling-hazard spawn interval in seconds (0 = none) | lives: lives for the level
+  const LEVELS = {
+    1:  { stars: 1,  starSpeed: 200, holes: 0,  moveHoles: 0,  animals: 0, animalSpeed: 150, comets: 0,   lives: 3 },
+    2:  { stars: 2,  starSpeed: 210, holes: 2,  moveHoles: 0,  animals: 0, animalSpeed: 150, comets: 0,   lives: 3 },
+    3:  { stars: 3,  starSpeed: 220, holes: 4,  moveHoles: 0,  animals: 1, animalSpeed: 150, comets: 0,   lives: 3 },
+    4:  { stars: 4,  starSpeed: 235, holes: 5,  moveHoles: 2,  animals: 1, animalSpeed: 170, comets: 0,   lives: 3 },
+    5:  { stars: 5,  starSpeed: 250, holes: 6,  moveHoles: 3,  animals: 1, animalSpeed: 185, comets: 2.6, lives: 3 },
+    6:  { stars: 6,  starSpeed: 265, holes: 8,  moveHoles: 4,  animals: 1, animalSpeed: 200, comets: 2.1, lives: 4 },
+    7:  { stars: 7,  starSpeed: 280, holes: 9,  moveHoles: 5,  animals: 2, animalSpeed: 215, comets: 1.8, lives: 4 },
+    8:  { stars: 8,  starSpeed: 295, holes: 10, moveHoles: 6,  animals: 2, animalSpeed: 230, comets: 1.5, lives: 4 },
+    9:  { stars: 9,  starSpeed: 315, holes: 12, moveHoles: 8,  animals: 2, animalSpeed: 245, comets: 1.2, lives: 5 },
+    10: { stars: 10, starSpeed: 335, holes: 14, moveHoles: 10, animals: 3, animalSpeed: 260, comets: 1.0, lives: 5 },
+  };
+  const MAX_LEVEL = 10;
+
   // ---------- Game state ----------
   const G = {
     state: 'menu',          // 'menu' | 'playing'
     level: 1, lives: 3,
     player: null, hooks: [], stars: [], holes: [], flashes: [],
-    animal: null, portal: null,
+    animals: [], comets: [], portal: null,
+    cometInterval: 0, cometClock: 0,
     shootCooldown: 0,
   };
 
   function startLevel(n) {
-    G.level = n; G.lives = 3;
+    const cfg = LEVELS[n] || LEVELS[MAX_LEVEL];
+    G.level = n; G.lives = cfg.lives || 3;
     G.player = new Player();
     G.hooks = []; G.flashes = []; G.portal = null; G.shootCooldown = 0;
-    G.stars = Array.from({ length: n }, () => new Star());
-    G.holes = Array.from({ length: (n - 1) * 5 }, () => new BlackHole());
-    G.animal = (n === 3) ? new Animal() : null;
+    G.comets = []; G.cometInterval = cfg.comets || 0; G.cometClock = cfg.comets || 0;
+    G.stars = Array.from({ length: cfg.stars }, () => new Star(cfg.starSpeed));
+    G.holes = [];
+    for (let i = 0; i < cfg.holes; i++) G.holes.push(new BlackHole(i < cfg.moveHoles));
+    G.animals = Array.from({ length: cfg.animals }, (_, i) => new Animal(i, cfg.animalSpeed));
     G.state = 'playing';
     showScreen(null);
     document.getElementById('hud').classList.add('active');
@@ -411,13 +493,13 @@
   }
 
   function nextOrWin() {
-    if (G.level >= 3) { play(SND.star); endGame('win'); }
+    if (G.level >= MAX_LEVEL) { play(SND.star); endGame('win'); }
     else { play(SND.plop); startLevel(G.level + 1); }
   }
 
   function updateHud() {
     document.getElementById('lives').textContent = 'Lives: ' + G.lives;
-    document.getElementById('lvlTag').textContent = 'Level ' + G.level;
+    document.getElementById('lvlTag').textContent = 'Level ' + G.level + '/' + MAX_LEVEL;
     document.getElementById('starsLeft').textContent = '★ ' + G.stars.length;
   }
 
@@ -438,14 +520,34 @@
     G.stars.forEach(s => s.update(dt));
     G.holes.forEach(h => h.update(dt));
     G.flashes.forEach(f => f.update(dt));
-    if (G.animal) {
-      G.animal.update(dt);
-      // push the player if overlapping and player is on the ground
-      if (p.onGround && aabb(p.box, G.animal.box)) {
-        p.x += G.animal.dir * 150 * dt * 1.2;
+
+    // porcupines push the player when touching on the ground
+    for (const an of G.animals) {
+      an.update(dt);
+      if (p.onGround && aabb(p.box, an.box)) {
+        p.x += an.dir * an.speed * dt * 1.2;
         p.x = Math.max(0, Math.min(VW - p.w, p.x));
       }
     }
+
+    // falling comets — dodge them or lose a life
+    if (G.cometInterval > 0) {
+      G.cometClock -= dt;
+      if (G.cometClock <= 0) {
+        G.comets.push(new Comet());
+        G.cometClock = G.cometInterval * rand(0.7, 1.3);
+      }
+    }
+    for (const c of G.comets) {
+      c.update(dt);
+      if (!c.dead && aabb(c.box, p.box)) {
+        c.dead = true;
+        G.flashes.push(new Flash(c.x + c.w/2, c.y + c.h/2));
+        play(SND.boom);
+        loseLife();
+      }
+    }
+    G.comets = G.comets.filter(c => !c.dead);
 
     // hooks vs targets
     for (const hook of G.hooks) {
@@ -511,7 +613,8 @@
       G.holes.forEach(drawBlackHole);
       G.stars.forEach(s => s.draw());
       if (G.portal) G.portal.draw();
-      if (G.animal) G.animal.draw();
+      G.animals.forEach(a => a.draw());
+      G.comets.forEach(c => c.draw());
       G.hooks.forEach(h => h.draw());
       G.player.draw();
       G.flashes.forEach(f => f.draw());
@@ -561,9 +664,18 @@
   document.querySelectorAll('[data-go]').forEach(b => {
     b.addEventListener('click', () => { unlockAudio(); play(SND.plop); showScreen(b.dataset.go); });
   });
-  document.querySelectorAll('[data-level]').forEach(b => {
-    b.addEventListener('click', () => { unlockAudio(); play(SND.star); startLevel(+b.dataset.level); });
-  });
+  function buildLevelGrid() {
+    const grid = document.getElementById('levelGrid');
+    grid.innerHTML = '';
+    for (let n = 1; n <= MAX_LEVEL; n++) {
+      const b = document.createElement('button');
+      b.className = 'star-btn';
+      b.innerHTML = '<img src="images/star.png" alt="" /><span class="lvl-num">' + n + '</span>';
+      b.addEventListener('click', () => { unlockAudio(); play(SND.star); startLevel(n); });
+      grid.appendChild(b);
+    }
+  }
+  buildLevelGrid();
   document.getElementById('menuBtn').addEventListener('click', () => {
     G.state = 'menu';
     document.getElementById('hud').classList.remove('active');
