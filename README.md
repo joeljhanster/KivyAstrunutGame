@@ -1,4 +1,27 @@
 # KivyAstunutGame
+
+## 📱 Play on your phone / in a browser (no install)
+
+A browser version of the game lives in **`index.html`** — it runs on any phone or
+desktop browser with on-screen touch controls, so you no longer need a keyboard.
+
+**Quick local test:**
+```
+python3 -m http.server 8000
+```
+then open `http://localhost:8000/` in a browser (or `http://<your-computer-ip>:8000/`
+from your phone on the same Wi‑Fi).
+
+**Play from anywhere (free hosting):** push this repo and enable **GitHub Pages**
+(Settings → Pages → deploy from `master`/branch root). Your game will be live at
+`https://<user>.github.io/KivyAstrunutGame/` — just open that link on your phone.
+
+**Controls:** tap **◀ ▶** to move, **⤴** to jump, **FIRE** to shoot. On a keyboard,
+use `A`/`D`, `W`, and `Space`. The web version reuses the original art and music and
+plays best in **landscape**. The original Python/Kivy desktop game below is unchanged.
+
+---
+
 The Astunut Game is a GUI-based Kivy app using Python. This game is about a lonely astronaut who loves music and is on a mission to collect the musical notes of the galaxy which are stars. However, as the level advances, dangerous blackholes appear which will harm his life when it is being shot. Beware of cute yet annoying creatures of space which will try and disturb the astronaut! Help the astronaut to finish his mission and bring him back home! 
 
 <p align=center>

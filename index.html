@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="theme-color" content="#0b0524" />
+<title>Astunut — Web</title>
+<style>
+  @font-face {
+    font-family: 'AbsolutePink';
+    src: url('fonts/absolutepink.otf');
+  }
+  @font-face {
+    font-family: 'HalfElven';
+    src: url('fonts/halfelvencond.ttf');
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    overflow: hidden; background: #0b0524; color: #fff;
+    font-family: 'HalfElven', system-ui, sans-serif;
+    user-select: none; -webkit-user-select: none;
+    touch-action: none;
+  }
+  #game { position: fixed; inset: 0; width: 100%; height: 100%; }
+  canvas { display: block; width: 100%; height: 100%; background: #0b0524; }
+
+  /* ---- Menu / overlay screens ---- */
+  .screen {
+    position: fixed; inset: 0; display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px;
+    background-size: cover; background-position: center;
+    z-index: 20;
+  }
+  .screen.active { display: flex; }
+  .screen.bg { background-image: url('images/galaxybackground.jpg'); }
+
+  h1.title {
+    font-family: 'AbsolutePink', cursive;
+    font-size: clamp(40px, 11vw, 110px);
+    margin: 0 0 8px; color: #ff77c8;
+    text-shadow: 0 0 18px rgba(255,119,200,.7);
+    line-height: 1;
+  }
+  .subtitle { font-size: clamp(14px, 3.4vw, 22px); opacity: .85; margin-bottom: 26px; max-width: 640px; }
+
+  .btn {
+    font-family: 'HalfElven', sans-serif;
+    border: none; border-radius: 16px; cursor: pointer;
+    padding: 16px 34px; margin: 9px; min-width: 220px;
+    font-size: clamp(20px, 5vw, 34px); color: #fff;
+    background: linear-gradient(180deg,#5b6bff,#3a1d8a);
+    box-shadow: 0 6px 0 #1f0e54, 0 10px 22px rgba(0,0,0,.5);
+    transition: transform .06s ease, box-shadow .06s ease;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #1f0e54, 0 5px 12px rgba(0,0,0,.5); }
+  .btn.pink { background: linear-gradient(180deg,#ff7ad0,#b3247e); box-shadow: 0 6px 0 #6e1450, 0 10px 22px rgba(0,0,0,.5); }
+  .btn.ghost { background: rgba(255,255,255,.12); box-shadow: 0 6px 0 rgba(0,0,0,.35); }
+
+  .star-pick { display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; }
+  .star-btn {
+    background: none; border: none; cursor: pointer; color: #fff;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    font-family:'HalfElven',sans-serif; font-size: clamp(16px,4vw,24px);
+  }
+  .star-btn img { width: clamp(80px, 22vw, 150px); height: auto; filter: drop-shadow(0 0 12px rgba(255,255,150,.6)); transition: transform .1s; }
+  .star-btn:active img { transform: scale(.9); }
+
+  .instr { max-width: 720px; background: rgba(10,4,30,.6); border-radius:18px; padding: 18px 22px; }
+  .instr-row { display:flex; align-items:center; gap:16px; margin: 12px 0; text-align:left; font-size: clamp(14px,3.4vw,20px); }
+  .instr-row img { width: 56px; height:56px; object-fit:contain; flex:0 0 auto; }
+  kbd {
+    background:#fff; color:#222; border-radius:6px; padding:1px 8px; font-weight:bold;
+    font-family: monospace; box-shadow:0 2px 0 #999; margin:0 2px;
+  }
+
+  /* ---- In-game HUD + touch controls ---- */
+  #hud { position: fixed; inset: 0; display: none; z-index: 10; pointer-events: none; }
+  #hud.active { display: block; }
+  #lives {
+    position: absolute; top: env(safe-area-inset-top, 10px); left: 14px;
+    font-family:'AbsolutePink',cursive; font-size: clamp(26px,6vw,46px);
+    color:#ffd84a; text-shadow:0 0 10px rgba(0,0,0,.8);
+  }
+  #lvlTag {
+    position:absolute; top: env(safe-area-inset-top, 10px); left: 50%; transform: translateX(-50%);
+    font-family:'AbsolutePink',cursive; font-size: clamp(22px,5vw,40px); color:#fff;
+    text-shadow:0 0 10px rgba(0,0,0,.8);
+  }
+  #starsLeft {
+    position:absolute; top: env(safe-area-inset-top, 10px); right: 84px;
+    font-size: clamp(16px,4vw,26px); color:#fff; text-shadow:0 0 8px #000;
+  }
+  #menuBtn {
+    position:absolute; top: env(safe-area-inset-top, 8px); right: 12px;
+    pointer-events:auto; background:rgba(255,255,255,.15); border:none; color:#fff;
+    border-radius:10px; padding:8px 14px; font-size: clamp(14px,4vw,20px); cursor:pointer;
+    font-family:'HalfElven',sans-serif;
+  }
+
+  .pad {
+    position:absolute; bottom: calc(env(safe-area-inset-bottom, 16px) + 16px);
+    display:flex; gap:14px; pointer-events:none;
+  }
+  .pad.left { left: calc(env(safe-area-inset-left, 16px) + 16px); }
+  .pad.right { right: calc(env(safe-area-inset-right, 16px) + 16px); }
+  .ctl {
+    pointer-events:auto; width: 84px; height: 84px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.5); background: rgba(255,255,255,.16);
+    color:#fff; font-size: 34px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer; touch-action:none; backdrop-filter: blur(2px);
+    user-select:none;
+  }
+  .ctl:active, .ctl.held { background: rgba(255,255,255,.42); transform: scale(.96); }
+  .ctl.shoot { background: rgba(255,120,200,.28); border-color: rgba(255,120,200,.7); width: 96px; height: 96px; font-size: 30px; }
+  .ctl.jump { background: rgba(120,200,255,.26); border-color: rgba(120,200,255,.7); }
+
+  #rotateHint {
+    position: fixed; inset: 0; display:none; z-index: 50;
+    background: rgba(8,3,24,.94); color:#fff; text-align:center;
+    align-items:center; justify-content:center; flex-direction:column; gap:14px; padding:30px;
+  }
+  #rotateHint .ico { font-size: 70px; animation: spin 2s ease-in-out infinite; }
+  @keyframes spin { 0%,100%{transform:rotate(0)} 50%{transform:rotate(90deg)} }
+
+  @media (min-width: 900px) and (pointer: fine) {
+    /* On desktop the touch pads are optional — keep them but hint keyboard works too */
+  }
+  .hint { font-size: clamp(12px,3vw,16px); opacity:.7; margin-top:18px; }
+</style>
+</head>
+<body>
+<div id="game">
+  <canvas id="cv"></canvas>
+</div>
+
+<!-- In-game HUD + touch controls -->
+<div id="hud">
+  <div id="lives">Lives: 3</div>
+  <div id="lvlTag">Level 1</div>
+  <div id="starsLeft">★ 0</div>
+  <button id="menuBtn">Menu</button>
+
+  <div class="pad left">
+    <div class="ctl" data-key="left">◀</div>
+    <div class="ctl" data-key="right">▶</div>
+  </div>
+  <div class="pad right">
+    <div class="ctl jump" data-key="jump">⤴</div>
+    <div class="ctl shoot" data-key="shoot">FIRE</div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="screen-home" class="screen bg active">
+  <h1 class="title">Astunut</h1>
+  <div class="subtitle">A lonely astronaut on a mission to collect the musical notes of the galaxy. Help him bring them home!</div>
+  <button class="btn pink" data-go="levels">Start</button>
+  <button class="btn ghost" data-go="instructions">Instructions</button>
+</div>
+
+<!-- LEVELS -->
+<div id="screen-levels" class="screen bg">
+  <h1 class="title">Pick a Level</h1>
+  <div class="star-pick">
+    <button class="star-btn" data-level="1"><img src="images/star.png" alt="" />Level 1</button>
+    <button class="star-btn" data-level="2"><img src="images/star.png" alt="" />Level 2</button>
+    <button class="star-btn" data-level="3"><img src="images/star.png" alt="" />Level 3</button>
+  </div>
+  <button class="btn ghost" data-go="home" style="margin-top:24px">Back</button>
+</div>
+
+<!-- INSTRUCTIONS -->
+<div id="screen-instructions" class="screen bg">
+  <h1 class="title">Compass</h1>
+  <div class="instr">
+    <div class="instr-row"><img src="images/astro.png" alt="" /><span>Tap <b>◀ ▶</b> to move, <b>⤴</b> to jump. On a keyboard use <kbd>A</kbd><kbd>D</kbd> and <kbd>W</kbd>.</span></div>
+    <div class="instr-row"><img src="images/arrow.png" alt="" /><span>Tap <b>FIRE</b> (or <kbd>Space</kbd>) to shoot your hook straight up.</span></div>
+    <div class="instr-row"><img src="images/star.png" alt="" /><span>Shoot <b>every star</b> to clear the level — then walk into the portal that appears.</span></div>
+    <div class="instr-row"><img src="images/blackhole.png" alt="" /><span>Avoid shooting <b>black holes</b> — each one costs a life. You have 3.</span></div>
+    <div class="instr-row"><img src="images/porcupine.png" alt="" /><span>Level 3: a cheeky creature shoves you around. Jump over it or push back!</span></div>
+  </div>
+  <button class="btn ghost" data-go="home" style="margin-top:18px">Back</button>
+</div>
+
+<!-- WIN -->
+<div id="screen-win" class="screen bg">
+  <h1 class="title" style="font-size:clamp(48px,16vw,160px)">You Win!</h1>
+  <div class="subtitle">The astronaut collected every note of the galaxy. 🚀</div>
+  <button class="btn pink" data-go="home">Home</button>
+</div>
+
+<!-- LOSE -->
+<div id="screen-lose" class="screen" style="background:#1a0510">
+  <h1 class="title" style="color:#ff5a7a;font-size:clamp(48px,16vw,160px)">You Lose!</h1>
+  <div class="subtitle">The black holes got the better of you. Try again!</div>
+  <button class="btn pink" data-go="levels">Replay</button>
+  <button class="btn ghost" data-go="home">Home</button>
+</div>
+
+<div id="rotateHint">
+  <div class="ico">📱</div>
+  <div style="font-size:clamp(18px,5vw,28px)">Rotate your phone sideways</div>
+  <div style="opacity:.7">Astunut plays best in landscape.</div>
+</div>
+
+<script>
+"use strict";
+(() => {
+  // ---------- Virtual world (matches the original 900x600 design) ----------
+  const VW = 900, VH = 600;
+
+  const canvas = document.getElementById('cv');
+  const ctx = canvas.getContext('2d');
+  let scale = 1, offX = 0, offY = 0, dpr = 1;
+
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth, h = window.innerHeight;
+    canvas.width = Math.round(w * dpr);
+    canvas.height = Math.round(h * dpr);
+    scale = Math.min(canvas.width / VW, canvas.height / VH);
+    offX = (canvas.width - VW * scale) / 2;
+    offY = (canvas.height - VH * scale) / 2;
+    updateRotateHint();
+  }
+  window.addEventListener('resize', resize);
+  window.addEventListener('orientationchange', resize);
+
+  // ---------- Assets ----------
+  function loadImg(src) { const i = new Image(); i.src = src; return i; }
+  const IMG = {
+    player: loadImg('images/astro.png'),
+    star:   loadImg('images/star.png'),
+    black:  loadImg('images/blackhole.png'),
+    hook:   loadImg('images/arrow.png'),
+    portal: loadImg('images/portal.png'),
+    animal: loadImg('images/porcupine.png'),
+    bg:     loadImg('images/galaxybackground.jpg'),
+  };
+
+  function makeAudio(src, vol, loop) {
+    const a = new Audio(src); a.volume = vol; a.loop = !!loop; a.preload = 'auto'; return a;
+  }
+  const SND = {
+    bg:   makeAudio('music/song1.wav', 0.35, true),
+    star: makeAudio('music/star3.wav', 0.6, false),
+    plop: makeAudio('music/pres_plop3.wav', 0.7, false),
+    boom: makeAudio('music/bh1.wav', 0.5, false),
+  };
+  let audioReady = false;
+  function unlockAudio() {
+    if (audioReady) return;
+    audioReady = true;
+    SND.bg.play().catch(()=>{});
+  }
+  function play(s) { try { s.currentTime = 0; s.play().catch(()=>{}); } catch(e){} }
+
+  // ---------- Helpers ----------
+  const rand = (a, b) => a + Math.random() * (b - a);
+  function aabb(a, b) {
+    return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  }
+  // draw in world coords: world y is from the bottom (Kivy style)
+  function drawImg(img, x, y, w, h) {
+    if (img && img.complete && img.naturalWidth) ctx.drawImage(img, x, VH - y - h, w, h);
+  }
+
+  // ---------- Entities ----------
+  class Player {
+    constructor() { this.w = 120; this.h = 120; this.x = VW/2 - 60; this.y = 0; this.vy = 0; this.onGround = true; }
+    get box() { return { x: this.x + 20, y: this.y, w: this.w - 40, h: this.h }; }
+    update(dt) {
+      const speed = 360;
+      if (input.left)  this.x -= speed * dt;
+      if (input.right) this.x += speed * dt;
+      this.x = Math.max(0, Math.min(VW - this.w, this.x));
+      // jump
+      if (input.jump && this.onGround) { this.vy = 560; this.onGround = false; }
+      this.vy -= 1500 * dt;            // gravity
+      this.y += this.vy * dt;
+      if (this.y <= 0) { this.y = 0; this.vy = 0; this.onGround = true; }
+    }
+    draw() { drawImg(IMG.player, this.x, this.y, this.w, this.h); }
+  }
+
+  class Hook {
+    constructor(x) { this.w = 36; this.h = 120; this.x = x - this.w/2; this.y = 0; this.dead = false; }
+    get box() { return { x: this.x + 6, y: this.y, w: this.w - 12, h: this.h }; }
+    update(dt) { this.y += 520 * dt; if (this.y > VH) this.dead = true; }
+    draw() { drawImg(IMG.hook, this.x, this.y, this.w, this.h); }
+  }
+
+  class Star {
+    constructor() {
+      this.w = 90; this.h = 90; this.x = VW/2; this.y = VH/2; this.dead = false;
+      [this.tx, this.ty] = this.pick(false);
+    }
+    get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
+    pick(moving) {
+      const left   = [rand(VW*0.05, VW*0.30), rand(VH*0.30, VH*0.70)];
+      const right  = [rand(VW*0.70, VW*0.90), rand(VH*0.30, VH*0.70)];
+      const top    = [rand(VW*0.05, VW*0.90), rand(VH*0.70, VH*0.90)];
+      const bottom = [rand(VW*0.05, VW*0.90), rand(VH*0.30, VH*0.40)];
+      let choices;
+      if (!moving) choices = [left, right, top, bottom];
+      else if (this.x <= VW*0.30) choices = [right, top, bottom];
+      else if (this.x >= VW*0.70) choices = [left, top, bottom];
+      else if (this.y <= VH*0.40) choices = [top, left, right];
+      else choices = [bottom, left, right];
+      return choices[(Math.random()*choices.length)|0];
+    }
+    update(dt) {
+      const step = 220 * dt;
+      if (this.x < this.tx) this.x += step; else if (this.x > this.tx) this.x -= step;
+      if (this.y < this.ty) this.y += step; else if (this.y > this.ty) this.y -= step;
+      if (Math.abs(this.tx - this.x) <= step || Math.abs(this.ty - this.y) <= step) {
+        [this.tx, this.ty] = this.pick(true);
+      }
+    }
+    draw() { drawImg(IMG.star, this.x, this.y, this.w, this.h); }
+  }
+
+  class BlackHole {
+    constructor() {
+      const s = rand(90, 120);
+      this.w = s; this.h = s;
+      this.x = rand(VW*0.12, VW*0.85 - s);
+      this.y = rand(VH*0.40, VH*0.82 - s);
+      this.dead = false; this.t = Math.random()*6;
+    }
+    get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
+    update(dt) { this.t += dt; }
+    // rendered by drawBlackHole() so it can rotate around its centre
+  }
+
+  class Animal {
+    constructor() { this.w = 110; this.h = 110; this.x = 0; this.y = 0; this.dir = 1; this.dead = false; }
+    get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
+    update(dt) {
+      this.x += this.dir * 150 * dt;
+      if (this.x > VW) this.x = -this.w;
+      if (this.x < -this.w) this.x = VW;
+    }
+    draw() {
+      // flip sprite to face travel direction
+      const cx = this.x, cyTop = VH - this.y - this.h;
+      ctx.save();
+      if (this.dir < 0) { ctx.translate(cx + this.w, cyTop); ctx.scale(-1, 1); if (IMG.animal.complete) ctx.drawImage(IMG.animal, 0, 0, this.w, this.h); }
+      else { if (IMG.animal.complete) ctx.drawImage(IMG.animal, cx, cyTop, this.w, this.h); }
+      ctx.restore();
+    }
+  }
+
+  class Portal {
+    constructor() { this.w = 130; this.h = 170; this.x = VW - this.w - 30; this.y = 0; }
+    get box() { return { x: this.x, y: this.y, w: this.w, h: this.h }; }
+    draw() { drawImg(IMG.portal, this.x, this.y, this.w, this.h); }
+  }
+
+  class Flash {
+    constructor(x, y) { this.x = x; this.y = y; this.r = 10; this.life = 0.35; this.dead = false; }
+    update(dt) { this.life -= dt; this.r += 420 * dt; if (this.life <= 0) this.dead = true; }
+    draw() {
+      const cy = VH - this.y;
+      const g = ctx.createRadialGradient(this.x, cy, 0, this.x, cy, this.r);
+      g.addColorStop(0, 'rgba(255,255,200,'+Math.max(0,this.life*2)+')');
+      g.addColorStop(0.5, 'rgba(255,170,90,'+Math.max(0,this.life*1.2)+')');
+      g.addColorStop(1, 'rgba(255,120,200,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(this.x, cy, this.r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ---------- Game state ----------
+  const G = {
+    state: 'menu',          // 'menu' | 'playing'
+    level: 1, lives: 3,
+    player: null, hooks: [], stars: [], holes: [], flashes: [],
+    animal: null, portal: null,
+    shootCooldown: 0,
+  };
+
+  function startLevel(n) {
+    G.level = n; G.lives = 3;
+    G.player = new Player();
+    G.hooks = []; G.flashes = []; G.portal = null; G.shootCooldown = 0;
+    G.stars = Array.from({ length: n }, () => new Star());
+    G.holes = Array.from({ length: (n - 1) * 5 }, () => new BlackHole());
+    G.animal = (n === 3) ? new Animal() : null;
+    G.state = 'playing';
+    showScreen(null);
+    document.getElementById('hud').classList.add('active');
+    updateHud();
+    updateRotateHint();
+  }
+
+  function loseLife() {
+    G.lives--;
+    if (G.lives <= 0) { endGame('lose'); }
+    updateHud();
+  }
+
+  function endGame(result) {
+    G.state = 'menu';
+    document.getElementById('hud').classList.remove('active');
+    showScreen(result === 'win' ? 'win' : 'lose');
+  }
+
+  function nextOrWin() {
+    if (G.level >= 3) { play(SND.star); endGame('win'); }
+    else { play(SND.plop); startLevel(G.level + 1); }
+  }
+
+  function updateHud() {
+    document.getElementById('lives').textContent = 'Lives: ' + G.lives;
+    document.getElementById('lvlTag').textContent = 'Level ' + G.level;
+    document.getElementById('starsLeft').textContent = '★ ' + G.stars.length;
+  }
+
+  // ---------- Update + collisions ----------
+  function update(dt) {
+    if (G.state !== 'playing') return;
+    const p = G.player;
+    p.update(dt);
+
+    // shooting (auto-fire while held, like the original 0.3s cadence)
+    G.shootCooldown -= dt;
+    if (input.shoot && G.shootCooldown <= 0) {
+      G.hooks.push(new Hook(p.x + p.w/2));
+      play(SND.plop);
+      G.shootCooldown = 0.32;
+    }
+
+    G.stars.forEach(s => s.update(dt));
+    G.holes.forEach(h => h.update(dt));
+    G.flashes.forEach(f => f.update(dt));
+    if (G.animal) {
+      G.animal.update(dt);
+      // push the player if overlapping and player is on the ground
+      if (p.onGround && aabb(p.box, G.animal.box)) {
+        p.x += G.animal.dir * 150 * dt * 1.2;
+        p.x = Math.max(0, Math.min(VW - p.w, p.x));
+      }
+    }
+
+    // hooks vs targets
+    for (const hook of G.hooks) {
+      hook.update(dt);
+      if (hook.dead) continue;
+      for (const s of G.stars) {
+        if (!s.dead && aabb(hook.box, s.box)) {
+          s.dead = true; hook.dead = true;
+          G.flashes.push(new Flash(s.x + s.w/2, s.y + s.h/2));
+          play(SND.star);
+          break;
+        }
+      }
+      if (hook.dead) continue;
+      for (const h of G.holes) {
+        if (!h.dead && aabb(hook.box, h.box)) {
+          h.dead = true; hook.dead = true;
+          G.flashes.push(new Flash(h.x + h.w/2, h.y + h.h/2));
+          play(SND.boom);
+          loseLife();
+          break;
+        }
+      }
+    }
+
+    G.hooks = G.hooks.filter(h => !h.dead);
+    G.holes = G.holes.filter(h => !h.dead);
+    G.flashes = G.flashes.filter(f => !f.dead);
+
+    const before = G.stars.length;
+    G.stars = G.stars.filter(s => !s.dead);
+    if (G.stars.length !== before) updateHud();
+
+    // all stars cleared -> portal, then walk into it
+    if (G.stars.length === 0 && G.state === 'playing') {
+      if (!G.portal) G.portal = new Portal();
+      if (aabb(p.box, G.portal.box)) { G.portal = null; nextOrWin(); }
+    }
+  }
+
+  // ---------- Render ----------
+  function drawBlackHole(h) {
+    ctx.save();
+    ctx.translate(h.x + h.w/2, VH - h.y - h.h/2);
+    ctx.rotate(h.t * 0.6);
+    if (IMG.black.complete && IMG.black.naturalWidth) ctx.drawImage(IMG.black, -h.w/2, -h.h/2, h.w, h.h);
+    else { ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(0,0,h.w/2,0,Math.PI*2); ctx.fill(); ctx.strokeStyle='#8a4bff'; ctx.lineWidth=4; ctx.stroke(); }
+    ctx.restore();
+  }
+
+  function render() {
+    // letterbox background
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.fillStyle = '#0b0524';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+
+    ctx.setTransform(scale,0,0,scale,offX,offY);
+    // world background
+    if (IMG.bg.complete && IMG.bg.naturalWidth) ctx.drawImage(IMG.bg, 0, 0, VW, VH);
+    else { ctx.fillStyle = '#140a33'; ctx.fillRect(0,0,VW,VH); }
+
+    if (G.state === 'playing') {
+      G.holes.forEach(drawBlackHole);
+      G.stars.forEach(s => s.draw());
+      if (G.portal) G.portal.draw();
+      if (G.animal) G.animal.draw();
+      G.hooks.forEach(h => h.draw());
+      G.player.draw();
+      G.flashes.forEach(f => f.draw());
+    }
+  }
+
+  // ---------- Main loop ----------
+  let last = 0;
+  function frame(t) {
+    const dt = Math.min(0.05, (t - last) / 1000 || 0);
+    last = t;
+    update(dt);
+    render();
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- Input ----------
+  const input = { left:false, right:false, jump:false, shoot:false };
+  const keyMap = { a:'left', arrowleft:'left', d:'right', arrowright:'right',
+                   w:'jump', arrowup:'jump', ' ':'shoot', spacebar:'shoot' };
+  window.addEventListener('keydown', e => {
+    const k = keyMap[e.key.toLowerCase()];
+    if (k) { input[k] = true; e.preventDefault(); unlockAudio(); }
+  });
+  window.addEventListener('keyup', e => {
+    const k = keyMap[e.key.toLowerCase()];
+    if (k) { input[k] = false; e.preventDefault(); }
+  });
+
+  // touch / pointer for the on-screen pad
+  document.querySelectorAll('.ctl').forEach(btn => {
+    const key = btn.dataset.key;
+    const on  = e => { input[key] = true;  btn.classList.add('held');    unlockAudio(); e.preventDefault(); };
+    const off = e => { input[key] = false; btn.classList.remove('held'); e.preventDefault(); };
+    btn.addEventListener('pointerdown', on);
+    btn.addEventListener('pointerup', off);
+    btn.addEventListener('pointercancel', off);
+    btn.addEventListener('pointerleave', off);
+    btn.addEventListener('contextmenu', e => e.preventDefault());
+  });
+
+  // ---------- Screen routing ----------
+  const screens = ['home','levels','instructions','win','lose'];
+  function showScreen(name) {
+    screens.forEach(s => document.getElementById('screen-'+s).classList.toggle('active', s === name));
+  }
+  document.querySelectorAll('[data-go]').forEach(b => {
+    b.addEventListener('click', () => { unlockAudio(); play(SND.plop); showScreen(b.dataset.go); });
+  });
+  document.querySelectorAll('[data-level]').forEach(b => {
+    b.addEventListener('click', () => { unlockAudio(); play(SND.star); startLevel(+b.dataset.level); });
+  });
+  document.getElementById('menuBtn').addEventListener('click', () => {
+    G.state = 'menu';
+    document.getElementById('hud').classList.remove('active');
+    showScreen('levels');
+  });
+
+  function updateRotateHint() {
+    const portrait = window.innerHeight > window.innerWidth;
+    const onPhone = Math.min(window.innerWidth, window.innerHeight) < 600;
+    document.getElementById('rotateHint').style.display =
+      (G.state === 'playing' && portrait && onPhone) ? 'flex' : 'none';
+  }
+
+  // ---------- Boot ----------
+  resize();
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
